@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StadiumAI — Admin Panel</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/index.css" />
+  <link rel="stylesheet" href="/src/styles/animations.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/admin.css" />
+  <style>
+    /* ---- LOGIN SCREEN ---- */
+    .login-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-primary);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .login-card {
+      background: var(--glass-bg-heavy);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 3rem;
+      width: 420px;
+      max-width: 90vw;
+      text-align: center;
+      animation: scaleIn 0.5s ease;
+    }
+    .login-card h1 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 0.25rem;
+    }
+    .login-card .login-subtitle {
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .login-field {
+      display: flex; flex-direction: column; gap: 4px;
+      text-align: left; margin-bottom: 1rem;
+    }
+    .login-field label {
+      font-size: 0.65rem; font-family: var(--font-mono);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+    }
+    .login-field input {
+      padding: 0.7rem 1rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+    .login-field input:focus { border-color: var(--accent-cyan); }
+    .login-error {
+      color: var(--accent-magenta);
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .login-error.show { display: block; }
+    .login-hint {
+      margin-top: 1.5rem;
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+
+    /* ---- ADMIN LAYOUT ---- */
+    .admin-app { display: none; min-height: 100vh; }
+    .admin-app.visible { display: block; }
+
+    .admin-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 2rem;
+      background: rgba(6, 10, 20, 0.95);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(20px);
+    }
+    .admin-topbar-logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+    }
+    .admin-topbar-right {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .admin-user-badge {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; color: var(--text-secondary);
+      padding: 4px 12px;
+      background: rgba(0, 229, 255, 0.06);
+      border: 1px solid rgba(0, 229, 255, 0.12);
+      border-radius: var(--radius-full);
+    }
+    .admin-topbar-live {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.7rem; color: var(--accent-green);
+      font-family: var(--font-mono);
+    }
+    .admin-topbar-live .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .admin-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 52px);
+    }
+
+    .admin-sidebar-full {
+      background: rgba(6, 10, 20, 0.6);
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 1.5rem 0.75rem;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .admin-sidebar-section {
+      font-size: 0.6rem; font-family: var(--font-mono);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--text-tertiary); padding: 1rem 0.75rem 0.3rem;
+    }
+
+    .admin-content {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .admin-content-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .admin-content-header h2 {
+      font-size: 1.3rem;
+    }
+
+    .admin-back-link {
+      color: var(--text-tertiary); font-size: 0.75rem;
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+    .admin-back-link:hover { color: var(--accent-cyan); }
+
+    @media (max-width: 768px) {
+      .admin-body { grid-template-columns: 1fr; }
+      .admin-sidebar-full { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div style="font-size:2rem; margin-bottom:0.5rem; color:var(--accent-cyan)">◆</div>
+      <h1>STADIUM<span class="accent">AI</span> Admin</h1>
+      <div class="login-subtitle">Authorized personnel only · Operations backend</div>
+
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter username" autocomplete="off" />
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter password" />
+      </div>
+      <div class="login-error" id="login-error">Invalid credentials. Access denied.</div>
+      <button class="btn btn-primary btn-glow" id="login-submit" style="width:100%">
+        <span>🔐 Access Admin Panel</span>
+      </button>
+      <div class="login-hint">
+        Demo credentials: admin / admin<br/>
+        <a href="/" style="color:var(--accent-cyan); margin-top:0.5rem; display:inline-block">← Back to Fan Experience</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN APP (hidden until login) -->
+  <div id="admin-app" class="admin-app">
+    <!-- Top Bar -->
+    <div class="admin-topbar">
+      <div class="admin-topbar-logo">
+        <span style="color:var(--accent-cyan)">◆</span>
+        STADIUM<span class="accent">AI</span>
+        <span style="font-size:0.6rem;font-family:var(--font-mono);color:var(--text-tertiary);margin-left:0.5rem">ADMIN v2.4</span>
+      </div>
+      <div class="admin-topbar-right">
+        <div class="admin-topbar-live">
+          <span class="live-dot"></span>
+          <span>SYSTEMS ONLINE</span>
+        </div>
+        <div class="admin-user-badge">
+          <span>👤</span>
+          <span>admin@stadiumai.io</span>
+        </div>
+        <button class="btn btn-glass btn-small" id="logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="admin-body">
+      <!-- Sidebar -->
+      <div class="admin-sidebar-full">
+        <div class="admin-sidebar-section">Management</div>
+        <button class="admin-nav-item active" data-admin-tab="venues"><span class="admin-nav-icon">🏟️</span> Venues</button>
+        <button class="admin-nav-item" data-admin-tab="events"><span class="admin-nav-icon">📅</span> Events</button>
+        <button class="admin-nav-item" data-admin-tab="staff"><span class="admin-nav-icon">👥</span> Staff</button>
+        <button class="admin-nav-item" data-admin-tab="live"><span class="admin-nav-icon">⚡</span> Live Controls</button>
+
+        <div class="admin-sidebar-section">Infrastructure</div>
+        <button class="admin-nav-item" data-admin-tab="sensors"><span class="admin-nav-icon">📡</span> Sensors</button>
+        <button class="admin-nav-item" data-admin-tab="dataflow"><span class="admin-nav-icon">⚡</span> Data Pipeline</button>
+
+        <div class="admin-sidebar-section">Insights</div>
+        <button class="admin-nav-item" data-admin-tab="analytics"><span class="admin-nav-icon">📊</span> Analytics</button>
+        <button class="admin-nav-item" data-admin-tab="scalability"><span class="admin-nav-icon">🚀</span> Scalability</button>
+
+        <div class="admin-sidebar-section">System</div>
+        <button class="admin-nav-item" data-admin-tab="settings"><span class="admin-nav-icon">⚙️</span> Settings</button>
+
+        <div style="flex:1"></div>
+        <a href="/" class="admin-back-link" style="padding:0.5rem 0.75rem">← Fan Experience</a>
+      </div>
+
+      <!-- Main Content -->
+      <div class="admin-content" id="admin-content">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>

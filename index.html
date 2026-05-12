@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StadiumAI — AI-Powered Stadium Experience Platform</title>
+  <meta name="description" content="50,000 fans. One intelligent platform. Real-time crowd intelligence, smart queues, indoor wayfinding, and staff operations — powered by Google Cloud AI." />
+  <meta name="theme-color" content="#0a0e1a" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/src/styles/index.css" />
+  <link rel="stylesheet" href="/src/styles/animations.css" />
+  <link rel="stylesheet" href="/src/styles/hero.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/modules.css" />
+  <link rel="stylesheet" href="/src/styles/dashboard.css" />
+  <link rel="stylesheet" href="/src/styles/admin.css" />
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-ring"></div>
+      <div class="loading-logo">
+        <span class="loading-logo-icon">◆</span>
+        <span class="loading-logo-text">STADIUM<span class="accent">AI</span></span>
+      </div>
+      <div class="loading-status">Initializing Neural Systems...</div>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Ticket Entry Modal -->
+  <div id="ticket-modal" class="ticket-modal active">
+    <div class="ticket-modal-card">
+      <div class="ticket-modal-logo">
+        <span style="color: var(--accent-cyan)">◆</span>
+        <span>STADIUM<span class="accent">AI</span></span>
+      </div>
+      <h2>Enter Your <span class="accent">Ticket</span></h2>
+      <p>Your ticket number personalizes the experience — showing your stadium, your section, your nearest gates, food, and facilities.</p>
+      <div class="ticket-input-group">
+        <input type="text" id="ticket-input" class="ticket-input" placeholder="e.g. NMS-A142-IPL2026" maxlength="20" autocomplete="off" />
+        <div class="ticket-error" id="ticket-error">Ticket not found. Try a sample ticket below.</div>
+      </div>
+      <button class="btn btn-primary btn-glow" id="ticket-submit" style="width:100%">
+        <span>Enter Stadium</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="ticket-sample-list">
+        <p>Try a sample ticket:</p>
+        <div class="ticket-samples">
+          <span class="ticket-sample-chip" data-ticket="NMS-A142-IPL2026">NMS-A142 (Ahmedabad)</span>
+          <span class="ticket-sample-chip" data-ticket="WAN-C034-IPL2026">WAN-C034 (Mumbai)</span>
+          <span class="ticket-sample-chip" data-ticket="CHN-E122-IPL2026">CHN-E122 (Bengaluru)</span>
+          <span class="ticket-sample-chip" data-ticket="EDN-G015-IPL2026">EDN-G015 (Kolkata)</span>
+          <span class="ticket-sample-chip" data-ticket="RGI-B077-IPL2026">RGI-B077 (Hyderabad)</span>
+        </div>
+      </div>
+      <div class="ticket-or">or</div>
+      <button class="ticket-skip" id="ticket-skip">Skip — explore demo mode →</button>
+    </div>
+  </div>
+
+  <!-- Venue Context Bar (shown after ticket entry) -->
+  <div id="venue-context-bar" class="venue-context-bar">
+    <span class="venue-name-display" id="venue-name-display">Narendra Modi Stadium</span>
+    <span class="venue-event-display" id="venue-event-display">GT vs MI — IPL 2026</span>
+    <span class="venue-ticket-display" id="venue-ticket-display">Seat: A-142</span>
+    <button class="venue-change-btn" id="venue-change-btn">Change</button>
+  </div>
+
+  <!-- Navigation -->
+  <nav id="main-nav" class="glass-nav">
+    <div class="nav-inner">
+      <a href="#hero" class="nav-logo">
+        <span class="nav-logo-icon">◆</span>
+        <span>STADIUM<span class="accent">AI</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#overview" class="nav-link" data-section="overview">Platform</a>
+        <a href="#crowd-flow" class="nav-link" data-section="crowd-flow">Crowd Flow</a>
+        <a href="#smart-queue" class="nav-link" data-section="smart-queue">Queues</a>
+        <a href="#wayfinding" class="nav-link" data-section="wayfinding">Wayfinding</a>
+        <a href="#staff-hub" class="nav-link" data-section="staff-hub">Staff Hub</a>
+        <a href="#notifications" class="nav-link nav-link-cta" data-section="notifications">Live Notifications</a>
+      </div>
+      <div class="nav-right">
+        <div id="match-mode-nav" class="match-mode-mini">
+          <span class="match-mode-label">MODE</span>
+          <span id="match-mode-nav-value" class="match-mode-value">PRE-MATCH</span>
+          <span class="match-mode-dot pulse-dot"></span>
+        </div>
+      </div>
+      <button class="nav-mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section id="hero" class="hero-section">
+    <canvas id="hero-particles" class="hero-canvas"></canvas>
+    <div class="hero-gradient-overlay"></div>
+    
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-up">
+        <span class="hero-badge-dot pulse-dot"></span>
+        <span>Google Cloud · Build with AI · Agentic Premier League</span>
+      </div>
+      
+      <h1 class="hero-title animate-fade-up delay-1">
+        <span class="hero-title-line" id="hero-capacity">1,32,000 Fans.</span>
+        <span class="hero-title-line hero-title-accent">One Intelligent</span>
+        <span class="hero-title-line">Platform.</span>
+      </h1>
+      
+      <p class="hero-subtitle animate-fade-up delay-2">
+        Real-time crowd intelligence, smart queues, indoor navigation, and AI-powered operations — 
+        orchestrating the perfect stadium experience.
+      </p>
+      
+      <div class="hero-actions animate-fade-up delay-3">
+        <button class="btn btn-primary btn-glow" id="btn-enter-experience">
+          <span>Enter the Experience</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="btn btn-glass" id="btn-autoplay-pitch">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>60s Executive Pitch</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- AI Match Mode Selector -->
+    <div id="match-mode-selector" class="match-mode-selector animate-fade-up delay-4">
+      <div class="match-mode-header">
+        <span class="match-mode-icon">⚡</span>
+        <span>LIVE SCENARIO SIMULATION (DEMO)</span>
+      </div>
+      <div class="match-mode-options">
+        <button class="match-mode-btn active" data-mode="pre-match">
+          <span class="mode-icon">🏟️</span>
+          <span class="mode-label">Pre-Match</span>
+          <span class="mode-time">T-60min</span>
+        </button>
+        <button class="match-mode-btn" data-mode="live">
+          <span class="mode-icon">⚽</span>
+          <span class="mode-label">Live Match</span>
+          <span class="mode-time">45:00</span>
+        </button>
+        <button class="match-mode-btn" data-mode="halftime">
+          <span class="mode-icon">⏸️</span>
+          <span class="mode-label">Half-Time</span>
+          <span class="mode-time">HT</span>
+        </button>
+        <button class="match-mode-btn" data-mode="exit">
+          <span class="mode-icon">🚪</span>
+          <span class="mode-label">Exit Rush</span>
+          <span class="mode-time">FT+5</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Ticker Bar -->
+    <div id="kpi-bar" class="kpi-bar">
+      <div class="kpi-item">
+        <span class="kpi-label">OCCUPANCY</span>
+        <span class="kpi-value" id="kpi-occupancy">0%</span>
+      </div>
+      <div class="kpi-divider"></div>
+      <div class="kpi-item">
+        <span class="kpi-label">AVG WAIT</span>
+        <span class="kpi-value" id="kpi-wait">0 min</span>
+      </div>
+      <div class="kpi-divider"></div>
+      <div class="kpi-item">
+        <span class="kpi-label">INCIDENTS</span>
+        <span class="kpi-value" id="kpi-incidents">0</span>
+      </div>
+      <div class="kpi-divider"></div>
+      <div class="kpi-item">
+        <span class="kpi-label">ACTIVE STAFF</span>
+        <span class="kpi-value" id="kpi-staff">0</span>
+      </div>
+      <div class="kpi-divider"></div>
+      <div class="kpi-item">
+        <span class="kpi-label">CONGESTION ALERTS</span>
+        <span class="kpi-value kpi-alert" id="kpi-alerts">0</span>
+      </div>
+      <div class="kpi-divider"></div>
+      <div class="kpi-item">
+        <span class="kpi-label">LATENCY</span>
+        <span class="kpi-value kpi-good" id="kpi-latency">&lt;2s</span>
+      </div>
+    </div>
+
+    <div class="hero-scroll-indicator">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ==================== PLATFORM OVERVIEW ==================== -->
+  <section id="overview" class="section overview-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">THE ARCHITECTURE</span>
+        <h2 class="section-title">Four Modules. <span class="accent">One Brain.</span></h2>
+        <p class="section-subtitle">Powered by Google Cloud — Vertex AI, BigQuery, Pub/Sub, and Google Maps Platform — working in concert to deliver sub-2-second fan experiences.</p>
+      </div>
+      
+      <div class="overview-grid" id="overview-grid">
+        <!-- Module Cards -->
+        <div class="overview-card" data-module="crowd-flow">
+          <div class="overview-card-icon">
+            <div class="icon-ring"></div>
+            <span>👁️</span>
+          </div>
+          <h3>Crowd Flow Intelligence</h3>
+          <p>Real-time density heatmaps, 15-minute congestion predictions, and personalized gate recommendations.</p>
+          <div class="overview-card-stats">
+            <span class="stat"><strong id="ov-zones">12</strong> zones monitored</span>
+            <span class="stat"><strong>500+</strong> sensors active</span>
+          </div>
+        </div>
+        
+        <div class="overview-card" data-module="smart-queue">
+          <div class="overview-card-icon">
+            <div class="icon-ring"></div>
+            <span>⏱️</span>
+          </div>
+          <h3>Smart Queue System</h3>
+          <p>Live wait estimates, virtual queuing, and AI-driven counter management for zero frustration.</p>
+          <div class="overview-card-stats">
+            <span class="stat"><strong id="ov-stands">24</strong> service points</span>
+            <span class="stat"><strong>Virtual</strong> queue ready</span>
+          </div>
+        </div>
+        
+        <div class="overview-card" data-module="wayfinding">
+          <div class="overview-card-icon">
+            <div class="icon-ring"></div>
+            <span>🧭</span>
+          </div>
+          <h3>Indoor Wayfinding</h3>
+          <p>Turn-by-turn navigation that routes fans around congestion, with full accessibility support.</p>
+          <div class="overview-card-stats">
+            <span class="stat"><strong>A→B</strong> in seconds</span>
+            <span class="stat"><strong>♿</strong> accessible</span>
+          </div>
+        </div>
+        
+        <div class="overview-card" data-module="staff-hub">
+          <div class="overview-card-icon">
+            <div class="icon-ring"></div>
+            <span>📋</span>
+          </div>
+          <h3>Staff Operations Hub</h3>
+          <p>Unified dashboard with instant incident routing, automated shift suggestions, and team coordination.</p>
+          <div class="overview-card-stats">
+            <span class="stat"><strong id="ov-staff">120</strong> staff connected</span>
+            <span class="stat"><strong>&lt;30s</strong> response</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tech Stack Bar -->
+      <div class="tech-stack-bar">
+        <span class="tech-badge"><span class="tech-dot"></span>Vertex AI</span>
+        <span class="tech-badge"><span class="tech-dot"></span>BigQuery</span>
+        <span class="tech-badge"><span class="tech-dot"></span>Pub/Sub</span>
+        <span class="tech-badge"><span class="tech-dot"></span>Cloud Run</span>
+        <span class="tech-badge"><span class="tech-dot"></span>Google Maps</span>
+        <span class="tech-badge"><span class="tech-dot"></span>GDPR Compliant</span>
+        <span class="tech-badge"><span class="tech-dot"></span>Offline Ready</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODULE 1: CROWD FLOW ==================== -->
+  <section id="crowd-flow" class="section module-section">
+    <div class="section-container">
+      <div class="module-header">
+        <span class="module-number">01</span>
+        <span class="section-tag">CROWD FLOW INTELLIGENCE</span>
+        <h2 class="section-title">See Every Movement. <span class="accent">Predict Every Surge.</span></h2>
+        <p class="section-subtitle">500+ IoT sensors and ticketing data fused into a real-time crowd intelligence engine with 15-minute predictive capability.</p>
+      </div>
+      
+      <div class="module-dashboard" id="crowd-flow-dashboard">
+        <!-- Heatmap Panel -->
+        <div class="dash-panel dash-panel-large">
+          <div class="panel-header">
+            <h4><span class="panel-dot live-dot"></span>Live Crowd Density Heatmap</h4>
+            <span class="panel-badge">REAL-TIME</span>
+          </div>
+          <div class="heatmap-container">
+            <canvas id="crowd-heatmap" class="heatmap-canvas"></canvas>
+            <div class="heatmap-zones" id="heatmap-zones">
+              <!-- Zones are rendered by JS -->
+            </div>
+          </div>
+          <div class="heatmap-legend">
+            <span class="legend-item"><span class="legend-color" style="background:#00ff88"></span>Low</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ffbe0b"></span>Medium</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ff6b35"></span>High</span>
+            <span class="legend-item"><span class="legend-color" style="background:#ff006e"></span>Critical</span>
+          </div>
+        </div>
+        
+        <!-- Zone Counters -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>Zone Density</h4>
+          </div>
+          <div class="zone-counters" id="zone-counters">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- 15-min Prediction -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>🔮 Next 15 Minutes</h4>
+            <span class="panel-badge panel-badge-accent">PREDICTIVE AI</span>
+          </div>
+          <div class="prediction-panel" id="prediction-panel">
+            <div class="prediction-timeline" id="prediction-timeline"></div>
+            <div class="prediction-alerts" id="prediction-alerts"></div>
+          </div>
+        </div>
+        
+        <!-- Gate Recommendations -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>🚪 Gate Recommendations</h4>
+          </div>
+          <div class="gate-recommendations" id="gate-recommendations">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- Staff Alerts -->
+        <div class="dash-panel dash-panel-alerts">
+          <div class="panel-header">
+            <h4>⚠️ Staff Redeployment Alerts</h4>
+          </div>
+          <div class="alert-feed" id="crowd-alert-feed">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Accordion -->
+      <div class="tech-accordion" id="crowd-tech-accordion">
+        <button class="accordion-trigger">
+          <span>📡 Data Sources & Ingestion Pipeline</span>
+          <span class="accordion-arrow">▾</span>
+        </button>
+        <div class="accordion-content">
+          <div class="tech-detail-grid">
+            <div class="tech-detail-item">
+              <h5>Ingestion</h5>
+              <p>IoT density sensors (BLE/WiFi) → Pub/Sub → Cloud Dataflow → BigQuery real-time table. Ticketing API webhooks stream gate scans. 1-second aggregation window.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>ML Model</h5>
+              <p>Vertex AI AutoML time-series forecasting trained on 200+ historical match-days. Features: zone density, gate throughput, weather, team rivalry score. 15-min horizon, retrained weekly.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>API Contract</h5>
+              <code>GET /api/v1/crowd/density → { zones: [{id, density, capacity, trend}] }<br/>
+              GET /api/v1/crowd/predict?horizon=15m → { predictions: [{zone, t+5, t+10, t+15}] }<br/>
+              POST /api/v1/crowd/alerts → triggers Pub/Sub staff notification</code>
+            </div>
+            <div class="tech-detail-item">
+              <h5>Privacy</h5>
+              <p>No PII collected. Sensors count aggregate bodies, not individuals. No facial recognition. Data retained 90 days for model training, then purged. GDPR Article 6(1)(f) — legitimate interest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODULE 2: SMART QUEUE ==================== -->
+  <section id="smart-queue" class="section module-section">
+    <div class="section-container">
+      <div class="module-header">
+        <span class="module-number">02</span>
+        <span class="section-tag">SMART QUEUE & WAIT-TIME SYSTEM</span>
+        <h2 class="section-title">Zero Wait. <span class="accent">Maximum Enjoyment.</span></h2>
+        <p class="section-subtitle">Live wait estimates, virtual queuing for hassle-free ordering, and AI-driven counter management anticipating demand before it hits.</p>
+      </div>
+      
+      <div class="module-dashboard" id="smart-queue-dashboard">
+        <!-- Queue Board -->
+        <div class="dash-panel dash-panel-large">
+          <div class="panel-header">
+            <h4><span class="panel-dot live-dot"></span>Live Queue Board</h4>
+            <span class="panel-badge">ALL SERVICE POINTS</span>
+          </div>
+          <div class="queue-board" id="queue-board">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- Virtual Queue Demo -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>📱 Virtual Queue Demo</h4>
+            <span class="panel-badge panel-badge-accent">INTERACTIVE</span>
+          </div>
+          <div class="virtual-queue-demo" id="virtual-queue-demo">
+            <div class="vq-phone-frame">
+              <div class="vq-phone-screen">
+                <div class="vq-header">
+                  <span>🍔 Food Court B</span>
+                  <span class="vq-wait" id="vq-wait-display">~8 min</span>
+                </div>
+                <div class="vq-status" id="vq-status">
+                  <div class="vq-position">
+                    <span class="vq-position-label">Your position</span>
+                    <span class="vq-position-number" id="vq-position">#12</span>
+                  </div>
+                  <div class="vq-progress-bar">
+                    <div class="vq-progress-fill" id="vq-progress-fill"></div>
+                  </div>
+                  <div class="vq-steps">
+                    <span class="vq-step active">Joined</span>
+                    <span class="vq-step">Preparing</span>
+                    <span class="vq-step">Ready!</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary btn-small" id="vq-join-btn">Join Virtual Queue</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Counter Management -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>🔧 Dynamic Counter Management</h4>
+          </div>
+          <div class="counter-management" id="counter-management">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- Demand Prediction -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>📈 Demand Surge Prediction</h4>
+          </div>
+          <div class="demand-chart-container">
+            <canvas id="demand-chart" class="demand-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-accordion" id="queue-tech-accordion">
+        <button class="accordion-trigger">
+          <span>📡 Data Sources & Ingestion Pipeline</span>
+          <span class="accordion-arrow">▾</span>
+        </button>
+        <div class="accordion-content">
+          <div class="tech-detail-grid">
+            <div class="tech-detail-item">
+              <h5>Ingestion</h5>
+              <p>POS system integration via Pub/Sub. Overhead camera people-counters per stand. BLE beacons for queue length estimation. 5-second update cycle.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>ML Model</h5>
+              <p>Gradient boosted trees (XGBoost on Vertex AI) predicting wait times. Features: current queue, service rate, time-of-day, match phase. Virtual queue uses priority scheduling algorithm.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>API Contract</h5>
+              <code>GET /api/v1/queues → { stands: [{id, name, waitMinutes, queueLength, countersOpen}] }<br/>
+              POST /api/v1/queues/virtual/join → { ticketId, position, estimatedWait }<br/>
+              WS /api/v1/queues/virtual/status → real-time position updates</code>
+            </div>
+            <div class="tech-detail-item">
+              <h5>Privacy</h5>
+              <p>Virtual queue uses anonymized ticket IDs. Queue imagery processed on-device, no cloud storage. Transaction data aggregated, no individual purchase history retained beyond session.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODULE 3: WAYFINDING ==================== -->
+  <section id="wayfinding" class="section module-section">
+    <div class="section-container">
+      <div class="module-header">
+        <span class="module-number">03</span>
+        <span class="section-tag">INDOOR WAYFINDING</span>
+        <h2 class="section-title">Navigate Smarter. <span class="accent">Avoid the Crowd.</span></h2>
+        <p class="section-subtitle">Turn-by-turn indoor navigation that factors live crowd density — routing fans around congestion, not through it. Full accessibility support.</p>
+      </div>
+      
+      <div class="module-dashboard" id="wayfinding-dashboard">
+        <!-- Route Map -->
+        <div class="dash-panel dash-panel-large">
+          <div class="panel-header">
+            <h4><span class="panel-dot live-dot"></span>Interactive Route Planner</h4>
+            <div class="wayfinding-controls">
+              <label class="toggle-control">
+                <input type="checkbox" id="density-routing-toggle" checked />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Density-Aware</span>
+              </label>
+              <label class="toggle-control">
+                <input type="checkbox" id="accessibility-toggle" />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">♿ Accessible</span>
+              </label>
+            </div>
+          </div>
+          <div class="route-map-container">
+            <canvas id="route-map" class="route-map-canvas"></canvas>
+            <div class="route-controls" id="route-controls">
+              <div class="route-select">
+                <label>From:</label>
+                <select id="route-from">
+                  <option value="seat-a142">Seat A-142</option>
+                  <option value="seat-b55">Seat B-55</option>
+                  <option value="gate-north">North Gate</option>
+                  <option value="gate-east">East Gate</option>
+                </select>
+              </div>
+              <div class="route-select">
+                <label>To:</label>
+                <select id="route-to">
+                  <option value="food-b">Food Court B</option>
+                  <option value="restroom-2">Restroom Cluster 2</option>
+                  <option value="merch-main">Main Merch Store</option>
+                  <option value="medical">Medical Station</option>
+                  <option value="family-zone">Family Zone</option>
+                  <option value="exit-south">South Exit</option>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-small" id="route-calculate">Navigate →</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Route Steps -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>📍 Turn-by-Turn Directions</h4>
+          </div>
+          <div class="route-steps" id="route-steps">
+            <div class="route-step">
+              <span class="route-step-icon">📍</span>
+              <span>Select a route to see directions</span>
+            </div>
+          </div>
+          <div class="route-meta" id="route-meta">
+            <div class="route-meta-item">
+              <span class="route-meta-label">Distance</span>
+              <span class="route-meta-value" id="route-distance">-</span>
+            </div>
+            <div class="route-meta-item">
+              <span class="route-meta-label">Est. Time</span>
+              <span class="route-meta-value" id="route-time">-</span>
+            </div>
+            <div class="route-meta-item">
+              <span class="route-meta-label">Congestion</span>
+              <span class="route-meta-value" id="route-congestion">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-accordion" id="wayfinding-tech-accordion">
+        <button class="accordion-trigger">
+          <span>📡 Data Sources & Ingestion Pipeline</span>
+          <span class="accordion-arrow">▾</span>
+        </button>
+        <div class="accordion-content">
+          <div class="tech-detail-grid">
+            <div class="tech-detail-item">
+              <h5>Ingestion</h5>
+              <p>Venue BIM model converted to navigation graph. BLE beacon network for indoor positioning (±2m accuracy). Crowd density layer from Module 1 overlaid on routing weights. Google Maps Platform Indoor Maps API.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>Routing Algorithm</h5>
+              <p>Modified A* pathfinding with dynamic edge weights. Congestion factor multiplies path cost by (1 + density²). Accessibility mode restricts to wheelchair-accessible edges (lifts, ramps, wide corridors ≥1.5m).</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>API Contract</h5>
+              <code>POST /api/v1/navigation/route → { from, to, accessible, densityAware } → { path: [{point, instruction}], distance, eta }<br/>
+              GET /api/v1/navigation/poi → { points: [{id, type, name, location, floor}] }</code>
+            </div>
+            <div class="tech-detail-item">
+              <h5>Privacy</h5>
+              <p>BLE positioning computed on-device. Server receives only origin/destination for routing — no continuous location tracking. Route history not persisted. Offline routing via cached graph.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODULE 4: STAFF HUB ==================== -->
+  <section id="staff-hub" class="section module-section">
+    <div class="section-container">
+      <div class="module-header">
+        <span class="module-number">04</span>
+        <span class="section-tag">STAFF OPERATIONS HUB</span>
+        <h2 class="section-title">Every Team. <span class="accent">One Command Center.</span></h2>
+        <p class="section-subtitle">Unified dashboard for Security, F&B, Medical, and Cleaning — with instant incident routing and AI-powered shift optimization.</p>
+      </div>
+      
+      <div class="module-dashboard staff-dashboard" id="staff-hub-dashboard">
+        <!-- Incident Feed -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4><span class="panel-dot live-dot"></span>Live Incident Feed</h4>
+            <span class="panel-badge" id="incident-count-badge">0 active</span>
+          </div>
+          <div class="incident-feed" id="incident-feed">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- Staff Map -->
+        <div class="dash-panel dash-panel-large">
+          <div class="panel-header">
+            <h4>📍 Staff Deployment Map</h4>
+            <div class="staff-filter-chips">
+              <button class="chip chip-active" data-team="all">All</button>
+              <button class="chip" data-team="security">🛡️ Security</button>
+              <button class="chip" data-team="medical">🏥 Medical</button>
+              <button class="chip" data-team="fnb">🍔 F&B</button>
+              <button class="chip" data-team="cleaning">🧹 Cleaning</button>
+            </div>
+          </div>
+          <div class="staff-map-container">
+            <canvas id="staff-map" class="staff-map-canvas"></canvas>
+          </div>
+        </div>
+        
+        <!-- Shift Suggestions -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>🤖 AI Shift Suggestions</h4>
+            <span class="panel-badge panel-badge-accent">PREDICTIVE</span>
+          </div>
+          <div class="shift-suggestions" id="shift-suggestions">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        
+        <!-- Team Stats -->
+        <div class="dash-panel">
+          <div class="panel-header">
+            <h4>📊 Team Performance</h4>
+          </div>
+          <div class="team-stats" id="team-stats">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-accordion" id="staff-tech-accordion">
+        <button class="accordion-trigger">
+          <span>📡 Data Sources & Ingestion Pipeline</span>
+          <span class="accordion-arrow">▾</span>
+        </button>
+        <div class="accordion-content">
+          <div class="tech-detail-grid">
+            <div class="tech-detail-item">
+              <h5>Ingestion</h5>
+              <p>Staff mobile app GPS/BLE for positions. Incident reports via app push. Walkie-talkie integration via speech-to-text. Shift schedules from HR system via API. All streamed through Pub/Sub.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>ML Model</h5>
+              <p>Staffing optimization model (Vertex AI custom training): predicts zone demand 20 min ahead using crowd density + historical incident rates + match phase. Outputs optimal staff distribution per team.</p>
+            </div>
+            <div class="tech-detail-item">
+              <h5>API Contract</h5>
+              <code>POST /api/v1/incidents → { type, location, severity, description } → { incidentId, assignedTeam, assignedStaff }<br/>
+              GET /api/v1/staff/positions → { staff: [{id, team, location, status}] }<br/>
+              GET /api/v1/staff/suggestions → { suggestions: [{zone, team, staffNeeded, reason}] }</code>
+            </div>
+            <div class="tech-detail-item">
+              <h5>Privacy</h5>
+              <p>Staff location tracked only during active shifts, consent-based. Incident reports pseudonymized for training. Performance metrics aggregated at team level, not individual. 30-day retention for operational data.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== LIVE NOTIFICATIONS ==================== -->
+  <section id="notifications" class="section sandbox-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">LIVE UPDATES</span>
+        <h2 class="section-title">AI Actions & <span class="accent">Real-Time Events</span></h2>
+        <p class="section-subtitle">A live feed of the events triggered by the platform and the AI's autonomous responses.</p>
+      </div>
+      
+      <div class="sandbox-response glass-panel" style="max-width: 800px; margin: 0 auto; width: 100%;">
+        <h3><span class="panel-dot live-dot"></span> Real-Time Action Log</h3>
+        <div class="response-log" id="sandbox-log" style="max-height: 400px;">
+          <div class="log-entry log-system">
+            <span class="log-time">--:--:--</span>
+            <span class="log-msg">Listening for live events from the Operations Control Center.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SUSTAINABILITY ==================== -->
+  <section id="sustainability" class="section sustainability-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">SUSTAINABILITY IMPACT</span>
+        <h2 class="section-title">Intelligent Operations. <span class="accent">Reduced Footprint.</span></h2>
+      </div>
+      
+      <div class="sustainability-grid">
+        <div class="sustain-card glass-panel">
+          <div class="sustain-icon">👣</div>
+          <div class="sustain-value" id="sustain-movement">-32%</div>
+          <div class="sustain-label">Staff Movement Reduced</div>
+          <div class="sustain-detail">AI routing optimizes patrol paths</div>
+        </div>
+        <div class="sustain-card glass-panel">
+          <div class="sustain-icon">⚡</div>
+          <div class="sustain-value" id="sustain-energy">-18%</div>
+          <div class="sustain-label">Energy Consumption</div>
+          <div class="sustain-detail">Smart counter open/close reduces idle</div>
+        </div>
+        <div class="sustain-card glass-panel">
+          <div class="sustain-icon">🍔</div>
+          <div class="sustain-value" id="sustain-waste">-24%</div>
+          <div class="sustain-label">Food Waste Prevention</div>
+          <div class="sustain-detail">Demand prediction prevents overprep</div>
+        </div>
+        <div class="sustain-card glass-panel">
+          <div class="sustain-icon">😊</div>
+          <div class="sustain-value" id="sustain-satisfaction">+41%</div>
+          <div class="sustain-label">Fan Satisfaction Score</div>
+          <div class="sustain-detail">Shorter waits, smarter navigation</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== EXECUTIVE PITCH ==================== -->
+  <section id="executive-pitch" class="section pitch-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">EXECUTIVE SUMMARY</span>
+        <h2 class="section-title">60-Second <span class="accent">Pitch Walkthrough</span></h2>
+        <p class="section-subtitle">An automated cinematic tour of StadiumAI for busy stakeholders.</p>
+      </div>
+      <div class="pitch-controls">
+        <button class="btn btn-primary btn-glow btn-large" id="btn-start-pitch">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Launch 60-Second Pitch</span>
+        </button>
+      </div>
+      <div class="pitch-progress" id="pitch-progress" style="display:none">
+        <div class="pitch-progress-bar">
+          <div class="pitch-progress-fill" id="pitch-progress-fill"></div>
+        </div>
+        <span class="pitch-timer" id="pitch-timer">0:00 / 1:00</span>
+        <button class="btn btn-glass btn-small" id="btn-stop-pitch">Stop</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer id="footer" class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-logo">
+            <span class="nav-logo-icon">◆</span>
+            <span>STADIUM<span class="accent">AI</span></span>
+          </div>
+          <p class="footer-desc">AI-powered stadium operations platform built on Google Cloud. Designed for the future of live event experiences.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Architecture</h4>
+          <ul>
+            <li>Vertex AI (ML/Predictions)</li>
+            <li>BigQuery (Analytics)</li>
+            <li>Pub/Sub (Real-time Events)</li>
+            <li>Cloud Run (Serverless APIs)</li>
+            <li>Google Maps (Indoor Maps)</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Compliance</h4>
+          <ul>
+            <li>GDPR Compliant by Default</li>
+            <li>No PII Collection</li>
+            <li>90-Day Data Retention</li>
+            <li>On-Device Processing</li>
+            <li>Offline Graceful Degradation</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Performance</h4>
+          <ul>
+            <li>&lt;2s Fan-Facing Latency</li>
+            <li>50,000 Concurrent Users</li>
+            <li>99.9% Uptime SLA</li>
+            <li>Edge-Cached Responses</li>
+            <li>Progressive Web App</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 StadiumAI — Built for Google Cloud AI Hackathon</p>
+        <div class="footer-tech-dots">
+          <span class="tech-dot-anim"></span>
+          <span class="tech-dot-anim"></span>
+          <span class="tech-dot-anim"></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Autoplay Pitch Overlay -->
+  <div id="pitch-overlay" class="pitch-overlay" style="display:none">
+    <div class="pitch-overlay-content" id="pitch-overlay-content"></div>
+    <div class="pitch-overlay-controls">
+      <div class="pitch-progress-bar">
+        <div class="pitch-overlay-progress-fill" id="pitch-overlay-progress-fill"></div>
+      </div>
+      <button class="btn btn-glass" id="pitch-overlay-close">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- Main Script -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
